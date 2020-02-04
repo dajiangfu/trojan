@@ -56,7 +56,7 @@ if [ $real_addr == $local_addr ] ; then
 	green "域名解析正常，开启安装nginx并申请https证书"
 	green "=========================================="
 	sleep 1s
-	rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+	rpm -Uvh https://github.com/dajiangfu/trojan/raw/master/nginx-release-centos-7-0.el7.ngx.noarch.rpm
     	yum install -y nginx
 	systemctl enable nginx.service
 	#设置伪装站
@@ -75,10 +75,10 @@ if [ $real_addr == $local_addr ] ; then
         --reloadcmd  "systemctl force-reload  nginx.service"
 	if test -s /usr/src/trojan-cert/fullchain.cer; then
         cd /usr/src
-	wget https://github.com/trojan-gfw/trojan/releases/download/v1.14.1/trojan-1.14.1-linux-amd64.tar.xz
+	wget https://github.com/dajiangfu/trojan/raw/master/trojan-1.14.1-linux-amd64.tar.xz
 	tar xf trojan-1.*
 	#下载trojan客户端
-	wget https://github.com/atrandys/trojan/raw/master/trojan-cli.zip
+	wget https://github.com/dajiangfu/trojan/raw/master/trojan-cli.zip
 	unzip trojan-cli.zip
 	cp /usr/src/trojan-cert/fullchain.cer /usr/src/trojan-cli/fullchain.cer
 	trojan_passwd=$(cat /dev/urandom | head -1 | md5sum | head -c 8)
