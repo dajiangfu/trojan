@@ -33,6 +33,7 @@ exit
 fi
 
 function install_trojan(){
+systemctl start firewalld
 firewall-cmd --zone=public --add-port=80/tcp --permanent
 firewall-cmd --zone=public --add-port=443/tcp --permanent
 systemctl stop firewalld
