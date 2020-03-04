@@ -33,7 +33,8 @@ exit
 fi
 
 function install_trojan(){
-systemctl start firewalld
+systemctl enable firewalld.service
+firewall-cmd --reload
 firewall-cmd --zone=public --add-port=80/tcp --permanent
 firewall-cmd --zone=public --add-port=443/tcp --permanent
 systemctl stop firewalld
@@ -198,7 +199,7 @@ EOF
 	green "======================================================================"
 	else
         red "================================"
-	red "https证书没有申请成果，本次安装失败"
+	red "https证书没有申请成功，本次安装失败"
 	red "================================"
 	fi
 	
