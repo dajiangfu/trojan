@@ -33,7 +33,7 @@ exit
 fi
 
 function install_trojan(){
-systemctl stop firewalld
+systemctl stop firewalld.service
 CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
 if [ "$CHECK" == "SELINUX=enforcing" ]; then
     sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -185,7 +185,7 @@ EOF
 	chmod +x /usr/lib/systemd/system/trojan.service
 	systemctl start trojan.service
 	systemctl enable trojan.service
-	systemctl start firewalld
+	systemctl start firewalld.service
 	systemctl enable firewalld.service
 	firewall-cmd --zone=public --add-port=80/tcp --permanent
 	firewall-cmd --zone=public --add-port=443/tcp --permanent
