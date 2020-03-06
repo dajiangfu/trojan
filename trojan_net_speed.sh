@@ -25,6 +25,13 @@ function net_speed(){
   ./tcp.sh
 }
 
+#清除缓存
+function del_cache(){
+  rm -f trojan_mult.sh
+  rm -f trojan_net_speed.sh
+  rm -f /usr/src/tcp.sh
+}
+
 #开始菜单
 start_menu(){
   clear
@@ -38,6 +45,7 @@ start_menu(){
   echo
   green " 1. 安装trojan"
   green " 2. 安装BBR+BBR魔改版+BBRplus+Lotserver"
+  green " 3. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -46,7 +54,10 @@ start_menu(){
   trojan
   ;;
   2)
-  net_speed 
+  net_speed
+  ;;
+  3)
+  del_cache
   ;;
   0)
   exit 1
