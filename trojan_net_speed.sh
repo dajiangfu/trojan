@@ -28,8 +28,8 @@ function net_speed(){
 #清除缓存
 function del_cache(){
   rm -f trojan_mult.sh
-  rm -f trojan_net_speed.sh
   rm -f /usr/src/tcp.sh
+  rm -f trojan_net_speed.sh
 }
 
 #开始菜单
