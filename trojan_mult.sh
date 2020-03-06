@@ -213,14 +213,14 @@ EOF
     "verify_hostname": true,
     "cert": "fullchain.cer",
     "cipher_tls13":"TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
-  "sni": "",
+    "sni": "",
     "alpn": [
       "h2",
       "http/1.1"
     ],
-        "reuse_session": true,
-        "session_ticket": false,
-        "curves": ""
+    "reuse_session": true,
+    "session_ticket": false,
+    "curves": ""
   },
   "tcp": {
     "no_delay": true,
