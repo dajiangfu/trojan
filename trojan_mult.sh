@@ -40,13 +40,6 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
   systempwd="/usr/lib/systemd/system/"
 fi
 
-function net_speed(){
-  cd /usr/src
-  wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh"
-  chmod +x tcp.sh
-  ./tcp.sh
-}
-
 function install_trojan(){
 systemctl stop nginx
 $systemPackage -y install net-tools socat
@@ -327,12 +320,6 @@ EOF
     green "3、打开stop.bat即关闭Trojan客户端"
     green "4、Trojan客户端需要搭配浏览器插件使用，例如switchyomega等"
     green "======================================================================"
-    read -p "是否安装加速模块? 请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      net_speed
-    fi
-    exit
   else
     red "==================================="
     red "https证书没有申请成功，自动安装失败"
@@ -431,7 +418,6 @@ start_menu(){
   red " 2. 卸载trojan"
   green " 3. 升级trojan"
   green " 4. 修复证书"
-  green " 5. 安装加速"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -447,9 +433,6 @@ start_menu(){
   ;;
   4)
   repair_cert 
-  ;;
-  5)
-  net_speed 
   ;;
   0)
   exit 1
