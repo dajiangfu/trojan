@@ -40,6 +40,13 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
   systempwd="/usr/lib/systemd/system/"
 fi
 
+function net_speed(){
+  cd /usr/src
+  wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh"
+  chmod +x tcp.sh
+  ./tcp.sh
+}
+
 function install_trojan(){
 systemctl stop nginx
 $systemPackage -y install net-tools socat
@@ -131,7 +138,7 @@ green "======================="
 read your_domain
 real_addr=`ping ${your_domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
 local_addr=`curl ipv4.icanhazip.com`
-if [ $real_addr == $real_addr ] ; then
+if [ $real_addr == $local_addr ] ; then
   green "=========================================="
   green "       域名解析正常，开始安装trojan"
   green "=========================================="
@@ -405,13 +412,6 @@ function update_trojan(){
   green "======================"
   green "开发中"
   green "======================"
-}
-
-function net_speed(){
-  cd /usr/src
-  wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh"
-  chmod +x tcp.sh
-  ./tcp.sh
 }
 
 start_menu(){
