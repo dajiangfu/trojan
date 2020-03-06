@@ -13,8 +13,8 @@ red(){
 #安装trojan
 function trojan(){
   curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh
-  chmod +x trojan_mult
-  ./trojan_mult
+  chmod +x trojan_mult.sh
+  ./trojan_mult.sh
 }
 
 #安装BBR+BBR魔改版+BBRplus+Lotserver
