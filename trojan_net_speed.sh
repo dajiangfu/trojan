@@ -68,9 +68,6 @@ function change_ssh_port(){
   firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
   firewall-cmd --reload
   systemctl restart sshd.service
-  change_mk="ture"
-
-
 }
 
 function close_ssh_default_port(){
