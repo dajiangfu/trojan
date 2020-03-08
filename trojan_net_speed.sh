@@ -60,6 +60,16 @@ EOF
   crontab -l
 }
 
+#改变SSH端口号
+function change_ssh_port(){
+  read -p "请输入新端口号:" port_num
+  sed '/#Port 22/a\Port $port_num' /etc/ssh/sshd_config
+  sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
+  firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
+  firewall-cmd --reload
+  systemctl restart sshd.service
+}
+
 #清除缓存
 function del_cache(){
   rm -f trojan_mult.sh
@@ -81,7 +91,8 @@ start_menu(){
   green " 1. 安装trojan"
   green " 2. 安装BBR+BBR魔改版+BBRplus+Lotserver"
   green " 3. 设置计划任务"
-  green " 4. 清除缓存"
+  green " 4. 改变SSH端口号"
+  green " 5. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -97,6 +108,9 @@ start_menu(){
   ;;
   4)
   del_cache
+  ;;
+  5)
+  change_ssh_port
   ;;
   0)
   exit 1
