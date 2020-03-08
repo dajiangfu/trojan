@@ -10,8 +10,6 @@ red(){
   echo -e "\033[31m\033[01m$1\033[0m"
 }
 
-change_mk="false"
-
 #安装trojan
 function trojan(){
   curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh
@@ -62,22 +60,24 @@ EOF
   crontab -l
 }
 
-#改变/修改SSH端口号
+#修改SSH端口号
 function change_ssh_port(){
-  if [ "$change_mk" == "false" ]; then
-    read -p "请输入新端口号:" port_num
-    sed -i "/#Port 22/a\Port $port_num" /etc/ssh/sshd_config
-    sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
-    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
-    firewall-cmd --reload
-    systemctl restart sshd.service
-    change_mk="ture"
-  else
-    green " 用新端口连接成功后屏蔽原22号端口"
-    sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
-    firewall-cmd --reload
-    systemctl restart sshd.service
-  fi
+  read -p "请输入新端口号:" port_num
+  sed -i "/#Port 22/a\Port $port_num" /etc/ssh/sshd_config
+  sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
+  firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
+  firewall-cmd --reload
+  systemctl restart sshd.service
+  change_mk="ture"
+
+
+}
+
+function close_ssh_default_port(){
+  green " 用新端口连接成功后屏蔽原22号端口"
+  sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
+  firewall-cmd --reload
+  systemctl restart sshd.service
 }
 
 #清除缓存
@@ -101,8 +101,9 @@ start_menu(){
   green " 1. 安装trojan"
   green " 2. 安装BBR+BBR魔改版+BBRplus+Lotserver"
   green " 3. 设置计划任务"
-  green " 4. 改变/修改SSH端口号"
-  green " 5. 清除缓存"
+  green " 4. 修改SSH端口号"
+  green " 5. 关闭SSH默认22端口"
+  green " 6. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -120,6 +121,9 @@ start_menu(){
   change_ssh_port
   ;;
   5)
+  close_ssh_default_port
+  ;;
+  6)
   del_cache
   ;;
   0)
