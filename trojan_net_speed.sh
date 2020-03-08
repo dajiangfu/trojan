@@ -10,7 +10,7 @@ red(){
   echo -e "\033[31m\033[01m$1\033[0m"
 }
 
-change_mk = "false"
+change_mk="false"
 
 #安装trojan
 function trojan(){
@@ -71,7 +71,7 @@ function change_ssh_port(){
     firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
     firewall-cmd --reload
     systemctl restart sshd.service
-    change_mk = "ture"
+    change_mk="ture"
   else
     green " 用新端口连接成功后屏蔽原22号端口"
     sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
