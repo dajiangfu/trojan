@@ -32,6 +32,38 @@ function del_cache(){
   rm "$0"
 }
 
+#设置计划任务
+function crontab_edit(){
+  cat /etc/crontab
+  read -p "请按照计划任务格式输入计划:" cron_tab
+  rm -f /etc/crontab
+  sleep 1
+  cat > /etc/crontab <<-EOF
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+
+# For details see man 4 crontabs
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name  command to be executed
+
+$cron_tab
+
+EOF
+  systemctl enable crond.service
+  systemctl start crond.service
+  crontab /etc/crontab
+  systemctl reload crond.service
+  systemctl status crond.service
+}
+
 #开始菜单
 start_menu(){
   clear
@@ -45,7 +77,8 @@ start_menu(){
   echo
   green " 1. 安装trojan"
   green " 2. 安装BBR+BBR魔改版+BBRplus+Lotserver"
-  green " 3. 清除缓存"
+  green " 3. 设置计划任务"
+  green " 4. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -57,6 +90,9 @@ start_menu(){
   net_speed
   ;;
   3)
+  crontab_edit
+  ;;
+  4)
   del_cache
   ;;
   0)
