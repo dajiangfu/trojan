@@ -63,7 +63,7 @@ EOF
 #改变SSH端口号
 function change_ssh_port(){
   read -p "请输入新端口号:" port_num
-  sed  -e "/#Port 22/a\Port $port_num" -e "-i 's/#Port 22/Port 22/g'" /etc/ssh/sshd_config
+  sed  -e "/#Port 22/a\Port $port_num" -e -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
   firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
   firewall-cmd --reload
   systemctl restart sshd.service
