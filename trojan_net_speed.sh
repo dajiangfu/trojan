@@ -64,7 +64,7 @@ EOF
 
 #改变/修改SSH端口号
 function change_ssh_port(){
-  if ["change_mk" == "false"]; then
+  if ["$change_mk" == "false"]; then
     read -p "请输入新端口号:" port_num
     sed -i "/#Port 22/a\Port $port_num" /etc/ssh/sshd_config
     sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
@@ -75,6 +75,8 @@ function change_ssh_port(){
   else
     green " 用新端口连接成功后屏蔽原22号端口"
     sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
+    firewall-cmd --reload
+    systemctl restart sshd.service
   fi
 }
 
