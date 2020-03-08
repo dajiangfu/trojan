@@ -107,10 +107,10 @@ start_menu(){
   crontab_edit
   ;;
   4)
-  del_cache
+  change_ssh_port
   ;;
   5)
-  change_ssh_port
+  del_cache
   ;;
   0)
   exit 1
