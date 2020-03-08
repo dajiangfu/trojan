@@ -25,17 +25,10 @@ function net_speed(){
   ./tcp.sh
 }
 
-#清除缓存
-function del_cache(){
-  rm -f trojan_mult.sh
-  rm -f /usr/src/tcp.sh
-  rm "$0"
-}
-
 #设置计划任务
 function crontab_edit(){
   cat /etc/crontab
-  read -p "请按照计划任务格式输入计划:" cron_tab
+  read -p "请按照以上格式输入计划:" cron_tab
   rm -f /etc/crontab
   sleep 1
   cat > /etc/crontab <<-EOF
@@ -62,6 +55,16 @@ EOF
   crontab /etc/crontab
   systemctl reload crond.service
   systemctl status crond.service
+  green "编辑后的计划任务："
+  echo
+  crontab -l
+}
+
+#清除缓存
+function del_cache(){
+  rm -f trojan_mult.sh
+  rm -f /usr/src/tcp.sh
+  rm "$0"
 }
 
 #开始菜单
