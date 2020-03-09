@@ -76,7 +76,7 @@ function change_ssh_port(){
     red " 端口已经添加，请勿重复添加"
     return
   else
-    sed -i "/\<#Port 22\>/a\Port $port_num" /etc/ssh/sshd_config
+    sed -i "/#Port 22/a\Port $port_num" /etc/ssh/sshd_config
     sed -i 's/\<#Port 22\>/Port 22/g' /etc/ssh/sshd_config
     firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
     firewall-cmd --reload
