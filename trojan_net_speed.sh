@@ -16,7 +16,8 @@ function trojan(){
   chmod +x trojan_mult.sh
   ./trojan_mult.sh
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键返回上级菜单 ... "
+  start_menu
 }
 
 #安装BBR+BBR魔改版+BBRplus+Lotserver
@@ -26,7 +27,8 @@ function net_speed(){
   chmod +x tcp.sh
   ./tcp.sh
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键返回上级菜单 ... "
+  start_menu
 }
 
 #设置计划任务
