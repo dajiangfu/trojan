@@ -55,7 +55,7 @@ EOF
   crontab /etc/crontab
   systemctl reload crond.service
   systemctl status crond.service
-  green "编辑后的计划任务："
+  blue "编辑后的计划任务："
   echo
   crontab -l
 }
@@ -109,6 +109,7 @@ start_menu(){
   green " ======================================="
   green " 介绍："
   green " 一键安装trojan+BBR+BBR魔改版+BBRplus+Lotserver综合脚本"
+  green " 一键配置计划任务、修改SSH端口"
   blue " 声明："
   red " *请不要在任何生产环境使用此脚本"
   red " *仅供技术交流使用，切勿用作非法用途，因使用不当造成麻烦请不要说认得我！"
