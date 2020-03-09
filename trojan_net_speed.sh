@@ -15,6 +15,8 @@ function trojan(){
   curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh
   chmod +x trojan_mult.sh
   ./trojan_mult.sh
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
 }
 
 #安装BBR+BBR魔改版+BBRplus+Lotserver
@@ -23,6 +25,8 @@ function net_speed(){
   wget -N "https://raw.githubusercontent.com/dajiangfu/Linux-NetSpeed/master/tcp.sh"
   chmod +x tcp.sh
   ./tcp.sh
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
 }
 
 #设置计划任务
@@ -58,7 +62,8 @@ EOF
   blue "编辑后的计划任务："
   echo
   crontab -l
-  sleep 2s
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
   start_menu
 }
 
@@ -84,7 +89,8 @@ function change_ssh_port(){
     firewall-cmd --reload
     systemctl restart sshd.service
   fi
-  sleep 2s
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
   start_menu
 }
 
@@ -99,7 +105,8 @@ function close_ssh_default_port(){
     systemctl restart sshd.service
     green " 新端口连接成功后屏蔽原22端口成功"
   fi
-  sleep 2s
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
   start_menu
 }
 
