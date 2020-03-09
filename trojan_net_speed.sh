@@ -65,7 +65,7 @@ EOF
   echo
   crontab -l
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
 }
 
@@ -92,7 +92,7 @@ function change_ssh_port(){
     systemctl restart sshd.service
   fi
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
 }
 
@@ -108,7 +108,7 @@ function close_ssh_default_port(){
     green " 新端口连接成功后屏蔽原22端口成功"
   fi
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
 }
 
