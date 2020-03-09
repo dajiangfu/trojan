@@ -85,10 +85,15 @@ function change_ssh_port(){
 }
 
 function close_ssh_default_port(){
-  sed -i 's/\<Port 22\>/#Port 22/g' /etc/ssh/sshd_config
-  firewall-cmd --reload
-  systemctl restart sshd.service
-  green " 新端口连接成功后屏蔽原22端口成功"
+  grep -q "#Port 22" /etc/ssh/sshd_config
+  if [ $? -eq 0 ]; then
+    red " 端口22已被屏蔽，无需重复操作"
+  else
+    sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
+    firewall-cmd --reload
+    systemctl restart sshd.service
+    green " 新端口连接成功后屏蔽原22端口成功"
+  fi
 }
 
 #清除缓存
