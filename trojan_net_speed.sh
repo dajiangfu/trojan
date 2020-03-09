@@ -58,6 +58,8 @@ EOF
   blue "编辑后的计划任务："
   echo
   crontab -l
+  sleep 2s
+  start_menu
 }
 
 #修改SSH端口号
@@ -82,18 +84,23 @@ function change_ssh_port(){
     firewall-cmd --reload
     systemctl restart sshd.service
   fi
+  sleep 2s
+  start_menu
 }
 
+#关闭SSH默认22端口
 function close_ssh_default_port(){
   grep -q "#Port 22" /etc/ssh/sshd_config
   if [ $? -eq 0 ]; then
-    red " 端口22已被屏蔽，无需重复操作"
+    red " 端口22已被关闭，无需重复操作"
   else
     sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
     firewall-cmd --reload
     systemctl restart sshd.service
     green " 新端口连接成功后屏蔽原22端口成功"
   fi
+  sleep 2s
+  start_menu
 }
 
 #清除缓存
@@ -115,8 +122,8 @@ start_menu(){
   red " *仅供技术交流使用，切勿用作非法用途，因使用不当造成麻烦请不要说认得我！"
   green " ======================================="
   echo
-  green " 1. 安装trojan"
-  green " 2. 安装BBR+BBR魔改版+BBRplus+Lotserver"
+  green " 1. 启动trojan安装脚本"
+  green " 2. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
   green " 3. 设置计划任务"
   green " 4. 修改SSH端口号"
   green " 5. 关闭SSH默认22端口"
