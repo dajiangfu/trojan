@@ -28,9 +28,9 @@ function net_speed(){
 #设置计划任务
 function crontab_edit(){
   cat /etc/crontab
-  read -p "请按照以上格式输入计划:" cron_tab
+  read -p "请按照以上格式输入计划任务：" crontab_cmd
   rm -f /etc/crontab
-  sleep 1
+  sleep 1s
   cat > /etc/crontab <<-EOF
 SHELL=/bin/bash
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
@@ -47,7 +47,7 @@ MAILTO=root
 # |  |  |  |  |
 # *  *  *  *  * user-name  command to be executed
 
-$cron_tab
+$crontab_cmd
 
 EOF
   systemctl enable crond.service
@@ -62,19 +62,33 @@ EOF
 
 #修改SSH端口号
 function change_ssh_port(){
-  read -p "请输入新端口号:" port_num
-  sed -i "/#Port 22/a\Port $port_num" /etc/ssh/sshd_config
-  sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
-  firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
-  firewall-cmd --reload
-  systemctl restart sshd.service
+  declare -i port_num
+  read -p "请输入新端口号(1024-65535):" port_num
+  if [ $port_num -ge 1024 && $port_num -le 65535 ]; then
+    green " 输入端口号正确，正在设置该端口号"
+  else
+    red "输入的端口号错误，请重新输入"
+    unset port_num
+    change_ssh_port
+  fi
+  grep -q "Port $port_num" /etc/ssh/sshd_config
+  if [ $? -eq 0 ]; then
+    red " 端口已经添加，请勿重复添加"
+    return
+  else
+    sed -i "/\<#Port 22\>/a\Port $port_num" /etc/ssh/sshd_config
+    sed -i 's/\<#Port 22\>/Port 22/g' /etc/ssh/sshd_config
+    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
+    firewall-cmd --reload
+    systemctl restart sshd.service
+  fi
 }
 
 function close_ssh_default_port(){
-  green " 用新端口连接成功后屏蔽原22号端口"
-  sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
+  sed -i 's/\<Port 22\>/#Port 22/g' /etc/ssh/sshd_config
   firewall-cmd --reload
   systemctl restart sshd.service
+  green " 新端口连接成功后屏蔽原22端口成功"
 }
 
 #清除缓存
