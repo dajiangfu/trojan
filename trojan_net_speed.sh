@@ -64,7 +64,7 @@ EOF
 function change_ssh_port(){
   declare -i port_num
   read -p "请输入新端口号(1024-65535):" port_num
-  if [ $port_num -ge 1024 && $port_num -le 65535 ]; then
+  if [[ $port_num -ge 1024 && $port_num -le 65535 ]]; then
     green " 输入端口号正确，正在设置该端口号"
   else
     red "输入的端口号错误，请重新输入"
