@@ -15,9 +15,6 @@ function trojan(){
   curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh
   chmod +x trojan_mult.sh
   ./trojan_mult.sh
-  sleep 1s
-  read -s -n1 -p "按任意键返回上级菜单 ... "
-  start_menu
 }
 
 #安装BBR+BBR魔改版+BBRplus+Lotserver
@@ -26,9 +23,6 @@ function net_speed(){
   wget -N "https://raw.githubusercontent.com/dajiangfu/Linux-NetSpeed/master/tcp.sh"
   chmod +x tcp.sh
   ./tcp.sh
-  sleep 1s
-  read -s -n1 -p "按任意键返回上级菜单 ... "
-  start_menu
 }
 
 #设置计划任务
@@ -64,9 +58,6 @@ EOF
   blue "编辑后的计划任务："
   echo
   crontab -l
-  sleep 1s
-  read -s -n1 -p "按任意键返回菜单 ... "
-  start_menu
 }
 
 #修改SSH端口号
@@ -91,9 +82,6 @@ function change_ssh_port(){
     firewall-cmd --reload
     systemctl restart sshd.service
   fi
-  sleep 1s
-  read -s -n1 -p "按任意键返回菜单 ... "
-  start_menu
 }
 
 #关闭SSH默认22端口
@@ -107,9 +95,6 @@ function close_ssh_default_port(){
     systemctl restart sshd.service
     green " 新端口连接成功后屏蔽原22端口成功"
   fi
-  sleep 1s
-  read -s -n1 -p "按任意键返回菜单 ... "
-  start_menu
 }
 
 #清除缓存
@@ -117,6 +102,27 @@ function del_cache(){
   rm -f trojan_mult.sh
   rm -f /usr/src/tcp.sh
   rm "$0"
+}
+
+#一键全自动安装
+function auto_install(){
+  trojan
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
+  net_speed
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
+  crontab_edit
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
+  change_ssh_port
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
+  close_ssh_default_port
+  sleep 1s
+  read -s -n1 -p "按任意键继续 ... "
+  del_cache
+  green " 大功告成！"
 }
 
 #开始菜单
@@ -137,27 +143,46 @@ start_menu(){
   green " 4. 修改SSH端口号"
   green " 5. 关闭SSH默认22端口"
   green " 6. 清除缓存"
+  green " 7. 全自动执行1-6"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
   case "$num" in
   1)
   trojan
+  sleep 1s
+  read -s -n1 -p "按任意键返回上级菜单 ... "
+  start_menu
   ;;
   2)
   net_speed
+  sleep 1s
+  read -s -n1 -p "按任意键返回上级菜单 ... "
+  start_menu
   ;;
   3)
   crontab_edit
+  sleep 1s
+  read -s -n1 -p "按任意键返回菜单 ... "
+  start_menu
   ;;
   4)
   change_ssh_port
+  sleep 1s
+  read -s -n1 -p "按任意键返回菜单 ... "
+  start_menu
   ;;
   5)
   close_ssh_default_port
+  sleep 1s
+  read -s -n1 -p "按任意键返回菜单 ... "
+  start_menu
   ;;
   6)
   del_cache
+  ;;
+  7)
+  auto_install
   ;;
   0)
   exit 1
