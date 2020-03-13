@@ -99,10 +99,10 @@ function close_ssh_default_port(){
 
 #清除缓存
 function del_cache(){
+  green " 已清除完毕"
   rm -f trojan_mult.sh
   rm -f /usr/src/tcp.sh
-  rm "$0"
-  green " 已清除完毕"
+  rm -f "$0"
 }
 
 #一键全自动安装
