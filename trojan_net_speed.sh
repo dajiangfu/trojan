@@ -12,6 +12,7 @@ red(){
 
 #安装trojan
 function trojan(){
+  cd
   curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh
   chmod +x trojan_mult.sh
   ./trojan_mult.sh
@@ -27,6 +28,7 @@ function net_speed(){
 
 #设置计划任务
 function crontab_edit(){
+  cd
   cat /etc/crontab
   read -p "请按照以上格式输入计划任务：" crontab_cmd
   rm -f /etc/crontab
@@ -62,6 +64,7 @@ EOF
 
 #修改SSH端口号
 function change_ssh_port(){
+  cd
   declare -i port_num
   read -p "请输入新端口号(1024-65535):" port_num
   if [[ $port_num -ge 1024 && $port_num -le 65535 ]]; then
@@ -86,6 +89,7 @@ function change_ssh_port(){
 
 #关闭SSH默认22端口
 function close_ssh_default_port(){
+  cd
   grep -q "#Port 22" /etc/ssh/sshd_config
   if [ $? -eq 0 ]; then
     red " 端口22已被关闭，无需重复操作"
@@ -99,6 +103,7 @@ function close_ssh_default_port(){
 
 #清除缓存
 function del_cache(){
+  cd
   green " 已清除完毕"
   rm -f trojan_mult.sh
   rm -f /usr/src/tcp.sh
