@@ -102,25 +102,31 @@ function del_cache(){
   rm -f trojan_mult.sh
   rm -f /usr/src/tcp.sh
   rm "$0"
+  green " 已清除完毕"
 }
 
 #一键全自动安装
 function auto_install(){
   trojan
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键安装加速模块 ... "
+  echo
   net_speed
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键设置计划任务 ... "
+  echo
   crontab_edit
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键自定义SSH端口 ... "
+  echo
   change_ssh_port
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键关闭SSH默认端口22 ... "
+  echo
   close_ssh_default_port
   sleep 1s
-  read -s -n1 -p "按任意键继续 ... "
+  read -s -n1 -p "按任意键清除缓存 ... "
+  echo
   del_cache
   green " 大功告成！"
 }
