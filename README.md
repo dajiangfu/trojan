@@ -4,7 +4,7 @@
 
 运行方法：
 
-curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_centos7.sh
+wget -N "https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_centos7.sh"
 
 chmod +x trojan_centos7.sh
 
