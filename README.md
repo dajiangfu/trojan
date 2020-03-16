@@ -14,12 +14,12 @@ chmod +x trojan_centos7.sh
 
 1、使用一键脚本安装，只适合centos7
 
-curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_centos7.sh && chmod +x trojan_centos7.sh && ./trojan_centos7.sh
+wget -N "https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_centos7.sh" && chmod +x trojan_centos7.sh && ./trojan_centos7.sh
 
 2、最新支持多系统版本
 
-curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh && chmod +x trojan_mult.sh && ./trojan_mult.sh
+wget -N "https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh" && chmod +x trojan_mult.sh && ./trojan_mult.sh
 
 3、综合安装
 
-curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_net_speed.sh && chmod +x trojan_net_speed.sh && ./trojan_net_speed.sh
+wget -N "https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_net_speed.sh" && chmod +x trojan_net_speed.sh && ./trojan_net_speed.sh
