@@ -186,11 +186,17 @@ EOF
 	chmod +x /usr/lib/systemd/system/trojan.service
 	systemctl start trojan.service
 	systemctl enable trojan.service
-	systemctl start firewalld.service
-	systemctl enable firewalld.service
-	firewall-cmd --zone=public --add-port=80/tcp --permanent
-	firewall-cmd --zone=public --add-port=443/tcp --permanent
-	firewall-cmd --reload
+  read -p "是否启用防火墙 ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    systemctl start firewalld.service
+    systemctl enable firewalld.service
+    firewall-cmd --zone=public --add-port=80/tcp --permanent
+    firewall-cmd --zone=public --add-port=443/tcp --permanent
+    firewall-cmd --reload
+  else
+    systemctl disable firewalld.service
+  fi
 	rm -f /usr/share/nginx/html/web.zip
 	rm -f /usr/src/trojan-linux-amd64.tar.xz
 	rm -f /usr/src/trojan-cli.zip

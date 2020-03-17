@@ -117,7 +117,6 @@ elif [ "$release" == "ubuntu" ]; then
     exit
   fi
   systemctl stop ufw
-  systemctl disable ufw
   apt-get update
 elif [ "$release" == "debian" ]; then
   apt-get update
@@ -302,11 +301,29 @@ EOF
     systemctl start trojan.service
     systemctl enable trojan.service
     if [ "$release" == "centos" ]; then
-      systemctl start firewalld.service
-      systemctl enable firewalld.service
-      firewall-cmd --zone=public --add-port=80/tcp --permanent
-      firewall-cmd --zone=public --add-port=443/tcp --permanent
-      firewall-cmd --reload
+      read -p "是否启用防火墙 ?请输入 [Y/n] :" yn
+      [ -z "${yn}" ] && yn="y"
+      if [[ $yn == [Yy] ]]; then
+        systemctl start firewalld.service
+        systemctl enable firewalld.service
+        firewall-cmd --zone=public --add-port=80/tcp --permanent
+        firewall-cmd --zone=public --add-port=443/tcp --permanent
+        firewall-cmd --reload
+      else
+        systemctl disable firewalld.service
+      fi
+    elif [ "$release" == "ubuntu" ]; then
+      read -p "是否启用防火墙 ?请输入 [Y/n] :" yn
+      [ -z "${yn}" ] && yn="y"
+      if [[ $yn == [Yy] ]]; then
+        systemctl start ufw
+        systemctl enable ufw
+        ufw allow 80
+        ufw allow 443
+        ufw reload
+      else
+        systemctl disable ufw
+      fi
     fi
     rm -f /usr/share/nginx/html/web.zip
     rm -f /usr/src/trojan-${latest_version}-linux-amd64.tar.xz
