@@ -196,6 +196,7 @@ start_menu(){
   change_ssh_port
   sleep 1s
   read -s -n1 -p "按任意键退出并使用修改好的端口连接 ... "
+  echo
   exit 1
   ;;
   3)
