@@ -192,6 +192,7 @@ start_menu(){
   1)
   change_ssh_port
   sleep 1s
+  red " 稍后请使用修改好的端口连接SSH"
   read -p "是否安装前的系统环境检查 ?请输入 [Y/n] :" yn
   [ -z "${yn}" ] && yn="y"
   if [[ $yn == [Yy] ]]; then
