@@ -50,7 +50,7 @@ function check_system(){
       echo -e "VPS 重启中..."
       reboot
     fi
-    exit
+    red "请手动重启"
   fi
   if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
     red "======================================================================="
@@ -64,7 +64,7 @@ function check_system(){
       echo -e "VPS 重启中..."
       reboot
     fi
-    exit
+    red "请手动重启"
   fi
 }
 
@@ -192,9 +192,16 @@ start_menu(){
   1)
   change_ssh_port
   sleep 1s
-  read -s -n1 -p "按任意键退出并使用修改好的端口连接 ... "
-  echo
-  exit 1
+  read -p "是否安装前的系统环境检查 ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    check_system
+    red " 接下来请使用修改好的端口连接SSH"
+  else
+    read -s -n1 -p "按任意键退出并使用修改好的端口连接SSH ... "
+    red " 已断开连接"
+    exit 1
+  fi
   ;;
   2)
   check_system
