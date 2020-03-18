@@ -10,6 +10,64 @@ red(){
   echo -e "\033[31m\033[01m$1\033[0m"
 }
 
+#安装前的系统环境检查
+function check_system(){
+  CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
+  if [ "$CHECK_SELINUX" == "SELINUX=enforcing" ]; then
+    red "======================================================================="
+    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    exit
+  fi
+  if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
+    red "======================================================================="
+    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    exit
+  fi
+}
+
+#修改SSH端口号
+function change_ssh_port(){
+  cd
+  declare -i port_num
+  read -p "请输入新端口号(1024-65535):" port_num
+  if [[ $port_num -ge 1024 && $port_num -le 65535 ]]; then
+    green " 输入端口号正确，正在设置该端口号"
+  else
+    red "输入的端口号错误，请重新输入"
+    unset port_num
+    change_ssh_port
+  fi
+  grep -q "Port $port_num" /etc/ssh/sshd_config
+  if [ $? -eq 0 ]; then
+    red " 端口已经添加，请勿重复添加"
+    return
+  else
+    sed -i "/Port 22/a\Port $port_num" /etc/ssh/sshd_config
+    sed -i '/Port 22/s/^#//' /etc/ssh/sshd_config
+    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
+    firewall-cmd --reload
+    systemctl restart sshd.service
+  fi
+}
+
 #安装trojan
 function trojan(){
   cd
@@ -62,31 +120,6 @@ EOF
   crontab -l
 }
 
-#修改SSH端口号
-function change_ssh_port(){
-  cd
-  declare -i port_num
-  read -p "请输入新端口号(1024-65535):" port_num
-  if [[ $port_num -ge 1024 && $port_num -le 65535 ]]; then
-    green " 输入端口号正确，正在设置该端口号"
-  else
-    red "输入的端口号错误，请重新输入"
-    unset port_num
-    change_ssh_port
-  fi
-  grep -q "Port $port_num" /etc/ssh/sshd_config
-  if [ $? -eq 0 ]; then
-    red " 端口已经添加，请勿重复添加"
-    return
-  else
-    sed -i "/Port 22/a\Port $port_num" /etc/ssh/sshd_config
-    sed -i '/Port 22/s/^#//' /etc/ssh/sshd_config
-    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
-    firewall-cmd --reload
-    systemctl restart sshd.service
-  fi
-}
-
 #关闭SSH默认22端口
 function close_ssh_default_port(){
   cd
@@ -126,47 +159,10 @@ function auto_install(){
   echo
   change_ssh_port
   sleep 1s
-  read -s -n1 -p "按任意键关闭SSH默认端口22 ... "
-  echo
-  close_ssh_default_port
-  sleep 1s
   read -s -n1 -p "按任意键清除缓存 ... "
   echo
   del_cache
   green " 大功告成！"
-}
-
-#安装前的系统环境检查
-function check_system(){
-  CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-  if [ "$CHECK_SELINUX" == "SELINUX=enforcing" ]; then
-    red "======================================================================="
-    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-    red "======================================================================="
-    read -p "是否现在重启 ?请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-      setenforce 0
-      echo -e "VPS 重启中..."
-      reboot
-    fi
-    exit
-  fi
-  if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
-    red "======================================================================="
-    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-    red "======================================================================="
-    read -p "是否现在重启 ?请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
-      setenforce 0
-      echo -e "VPS 重启中..."
-      reboot
-    fi
-    exit
-  fi
 }
 
 #开始菜单
@@ -181,56 +177,56 @@ start_menu(){
   red " *仅供技术交流使用，切勿用作非法用途，因使用不当造成麻烦请不要说认得我！"
   green " ======================================="
   echo
-  green " 1. 启动trojan安装脚本"
-  green " 2. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
-  green " 3. 设置计划任务"
-  green " 4. 修改SSH端口号"
-  green " 5. 关闭SSH默认22端口"
-  green " 6. 清除缓存"
-  green " 7. 全自动执行1-6"
-  green " 8. 安装前的系统环境检查"
+  green " 1. 安装前的系统环境检查"
+  green " 2. 修改SSH端口号"
+  green " 3. 启动trojan安装脚本"
+  green " 4. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
+  green " 5. 设置计划任务"  
+  green " 6. 关闭SSH默认22端口"
+  green " 7. 清除缓存"
+  green " 8. 全自动执行3-7"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
   case "$num" in
   1)
+  check_system
+  ;;
+  2)
+  change_ssh_port
+  sleep 1s
+  read -s -n1 -p "按任意键退出并使用修改好的端口连接 ... "
+  exit 1
+  ;;
+  3)
   trojan
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  2)
+  4)
   net_speed
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  3)
+  5)
   crontab_edit
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  4)
-  change_ssh_port
-  sleep 1s
-  read -s -n1 -p "按任意键返回菜单 ... "
-  start_menu
-  ;;
-  5)
+  6)
   close_ssh_default_port
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  6)
+  7)
   del_cache
   ;;
-  7)
-  auto_install
-  ;;
   8)
-  check_system
+  auto_install
   ;;
   0)
   exit 1
