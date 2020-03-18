@@ -136,6 +136,39 @@ function auto_install(){
   green " 大功告成！"
 }
 
+#安装前的系统环境检查
+function check_system(){
+  CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
+  if [ "$CHECK_SELINUX" == "SELINUX=enforcing" ]; then
+    red "======================================================================="
+    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    exit
+  fi
+  if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
+    red "======================================================================="
+    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    exit
+  fi
+}
+
 #开始菜单
 start_menu(){
   clear
@@ -155,6 +188,7 @@ start_menu(){
   green " 5. 关闭SSH默认22端口"
   green " 6. 清除缓存"
   green " 7. 全自动执行1-6"
+  green " 8. 安装前的系统环境检查"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -194,6 +228,9 @@ start_menu(){
   ;;
   7)
   auto_install
+  ;;
+  8)
+  check_system
   ;;
   0)
   exit 1
