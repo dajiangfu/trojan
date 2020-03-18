@@ -10,6 +10,31 @@ red(){
   echo -e "\033[31m\033[01m$1\033[0m"
 }
 
+#修改SSH端口号
+function change_ssh_port(){
+  cd
+  declare -i port_num
+  read -p "请输入新端口号(1024-65535):" port_num
+  if [[ $port_num -ge 1024 && $port_num -le 65535 ]]; then
+    green " 输入端口号正确，正在设置该端口号"
+  else
+    red "输入的端口号错误，请重新输入"
+    unset port_num
+    change_ssh_port
+  fi
+  grep -q "Port $port_num" /etc/ssh/sshd_config
+  if [ $? -eq 0 ]; then
+    red " 端口已经添加，请勿重复添加"
+    return
+  else
+    sed -i "/Port 22/a\Port $port_num" /etc/ssh/sshd_config
+    sed -i '/Port 22/s/^#//' /etc/ssh/sshd_config
+    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
+    firewall-cmd --reload
+    systemctl restart sshd.service
+  fi
+}
+
 #安装前的系统环境检查
 function check_system(){
   CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
@@ -40,31 +65,6 @@ function check_system(){
       reboot
     fi
     exit
-  fi
-}
-
-#修改SSH端口号
-function change_ssh_port(){
-  cd
-  declare -i port_num
-  read -p "请输入新端口号(1024-65535):" port_num
-  if [[ $port_num -ge 1024 && $port_num -le 65535 ]]; then
-    green " 输入端口号正确，正在设置该端口号"
-  else
-    red "输入的端口号错误，请重新输入"
-    unset port_num
-    change_ssh_port
-  fi
-  grep -q "Port $port_num" /etc/ssh/sshd_config
-  if [ $? -eq 0 ]; then
-    red " 端口已经添加，请勿重复添加"
-    return
-  else
-    sed -i "/Port 22/a\Port $port_num" /etc/ssh/sshd_config
-    sed -i '/Port 22/s/^#//' /etc/ssh/sshd_config
-    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
-    firewall-cmd --reload
-    systemctl restart sshd.service
   fi
 }
 
@@ -177,8 +177,8 @@ start_menu(){
   red " *仅供技术交流使用，切勿用作非法用途，因使用不当造成麻烦请不要说认得我！"
   green " ======================================="
   echo
-  green " 1. 安装前的系统环境检查"
-  green " 2. 修改SSH端口号"
+  green " 1. 修改SSH端口号"
+  green " 2. 安装前的系统环境检查"
   green " 3. 启动trojan安装脚本"
   green " 4. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
   green " 5. 设置计划任务"  
@@ -190,14 +190,14 @@ start_menu(){
   read -p "请输入数字:" num
   case "$num" in
   1)
-  check_system
-  ;;
-  2)
   change_ssh_port
   sleep 1s
   read -s -n1 -p "按任意键退出并使用修改好的端口连接 ... "
   echo
   exit 1
+  ;;
+  2)
+  check_system
   ;;
   3)
   trojan
