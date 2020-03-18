@@ -155,9 +155,9 @@ function auto_install(){
   echo
   crontab_edit
   sleep 1s
-  read -s -n1 -p "按任意键自定义SSH端口 ... "
+  read -s -n1 -p "按任意键关闭SSH默认22端口 ... "
   echo
-  change_ssh_port
+  close_ssh_default_port
   sleep 1s
   read -s -n1 -p "按任意键清除缓存 ... "
   echo
@@ -181,7 +181,7 @@ start_menu(){
   green " 2. 安装前的系统环境检查"
   green " 3. 启动trojan安装脚本"
   green " 4. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
-  green " 5. 设置计划任务"  
+  green " 5. 设置计划任务"
   green " 6. 关闭SSH默认22端口"
   green " 7. 清除缓存"
   green " 8. 全自动执行3-7"
