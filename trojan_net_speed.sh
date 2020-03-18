@@ -76,14 +76,6 @@ function trojan(){
   ./trojan_mult.sh
 }
 
-#安装BBR+BBR魔改版+BBRplus+Lotserver
-function net_speed(){
-  cd /usr/src
-  wget -N "https://raw.githubusercontent.com/dajiangfu/Linux-NetSpeed/master/tcp.sh"
-  chmod +x tcp.sh
-  ./tcp.sh
-}
-
 #设置计划任务
 function crontab_edit(){
   cd
@@ -110,6 +102,7 @@ MAILTO=root
 $crontab_cmd
 
 EOF
+  chmod +x /etc/crontab
   systemctl enable crond.service
   systemctl start crond.service
   crontab /etc/crontab
@@ -134,6 +127,14 @@ function close_ssh_default_port(){
   fi
 }
 
+#安装BBR+BBR魔改版+BBRplus+Lotserver
+function net_speed(){
+  cd /usr/src
+  wget -N "https://raw.githubusercontent.com/dajiangfu/Linux-NetSpeed/master/tcp.sh"
+  chmod +x tcp.sh
+  ./tcp.sh
+}
+
 #清除缓存
 function del_cache(){
   cd
@@ -147,22 +148,30 @@ function del_cache(){
 function auto_install(){
   trojan
   sleep 1s
-  read -s -n1 -p "按任意键安装加速模块 ... "
-  echo
-  net_speed
-  sleep 1s
-  read -s -n1 -p "按任意键设置计划任务 ... "
-  echo
-  crontab_edit
-  sleep 1s
-  read -s -n1 -p "按任意键关闭SSH默认22端口 ... "
-  echo
-  close_ssh_default_port
-  sleep 1s
+  read -p "是否设置计划任务 ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    echo
+    crontab_edit
+    sleep 1s
+  fi
+  read -p "是否关闭SSH默认22端口 ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    echo
+    close_ssh_default_port
+    sleep 1s
+  fi
+  read -p "是否安装加速模块 ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    echo
+    net_speed
+    sleep 1s
+  fi
   read -s -n1 -p "按任意键清除缓存 ... "
   echo
   del_cache
-  green " 大功告成！"
 }
 
 #开始菜单
@@ -180,9 +189,9 @@ start_menu(){
   green " 1. 修改SSH端口号"
   green " 2. 安装前的系统环境检查"
   green " 3. 启动trojan安装脚本"
-  green " 4. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
-  green " 5. 设置计划任务"
-  green " 6. 关闭SSH默认22端口"
+  green " 4. 设置计划任务"
+  green " 5. 关闭SSH默认22端口"
+  green " 6. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
   green " 7. 清除缓存"
   green " 8. 全自动执行3-7"
   blue " 0. 退出脚本"
@@ -214,21 +223,21 @@ start_menu(){
   start_menu
   ;;
   4)
-  net_speed
-  sleep 1s
-  read -s -n1 -p "按任意键返回上级菜单 ... "
-  start_menu
-  ;;
-  5)
   crontab_edit
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  6)
+  5)
   close_ssh_default_port
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
+  start_menu
+  ;;
+  6)
+  net_speed
+  sleep 1s
+  read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
   7)
