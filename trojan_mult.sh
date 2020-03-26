@@ -211,7 +211,8 @@ EOF
     "verify": true,
     "verify_hostname": true,
     "cert": "fullchain.cer",
-    "cipher_tls13":"TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
+    "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:AES128-SHA:AES256-SHA:DES-CBC3-SHA",
+    "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
     "sni": "",
     "alpn": [
       "h2",
@@ -224,6 +225,7 @@ EOF
   "tcp": {
     "no_delay": true,
     "keep_alive": true,
+    "reuse_port": false,
     "fast_open": false,
     "fast_open_qlen": 20
   }
@@ -245,11 +247,15 @@ EOF
     "cert": "/usr/src/trojan-cert/fullchain.cer",
     "key": "/usr/src/trojan-cert/private.key",
     "key_password": "",
-    "cipher_tls13":"TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
+    "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
+    "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
     "prefer_server_cipher": true,
     "alpn": [
       "http/1.1"
     ],
+    "alpn_port_override": {
+      "h2": 81
+    },
     "reuse_session": true,
     "session_ticket": false,
     "session_timeout": 600,
@@ -258,8 +264,10 @@ EOF
     "dhparam": ""
   },
   "tcp": {
+    "prefer_ipv4": false,
     "no_delay": true,
     "keep_alive": true,
+    "reuse_port": false,
     "fast_open": false,
     "fast_open_qlen": 20
   },
@@ -269,7 +277,8 @@ EOF
     "server_port": 3306,
     "database": "trojan",
     "username": "trojan",
-    "password": ""
+    "password": "",
+    "cafile": ""
   }
 }
 EOF
