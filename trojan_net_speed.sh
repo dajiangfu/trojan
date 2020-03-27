@@ -68,6 +68,20 @@ function check_system(){
   fi
 }
 
+#关闭SSH默认22端口
+function close_ssh_default_port(){
+  cd
+  grep -q "#Port 22" /etc/ssh/sshd_config
+  if [ $? -eq 0 ]; then
+    red " 端口22已被关闭，无需重复操作"
+  else
+    sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
+    firewall-cmd --reload
+    systemctl restart sshd.service
+    green " 新端口连接成功后屏蔽原22端口成功"
+  fi
+}
+
 #安装trojan
 function trojan(){
   cd
@@ -113,20 +127,6 @@ EOF
   crontab -l
 }
 
-#关闭SSH默认22端口
-function close_ssh_default_port(){
-  cd
-  grep -q "#Port 22" /etc/ssh/sshd_config
-  if [ $? -eq 0 ]; then
-    red " 端口22已被关闭，无需重复操作"
-  else
-    sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
-    firewall-cmd --reload
-    systemctl restart sshd.service
-    green " 新端口连接成功后屏蔽原22端口成功"
-  fi
-}
-
 #安装BBR+BBR魔改版+BBRplus+Lotserver
 function net_speed(){
   cd /usr/src
@@ -135,31 +135,26 @@ function net_speed(){
   ./tcp.sh
 }
 
-#清除缓存
-function del_cache(){
-  cd
-  green " 已清除完毕"
-  rm -f trojan_mult.sh
-  rm -f /usr/src/tcp.sh
-  rm -f "$0"
-}
-
 #一键全自动安装
 function auto_install(){
-  trojan
-  sleep 1s
-  read -p "是否设置计划任务 ?请输入 [Y/n] :" yn
-  [ -z "${yn}" ] && yn="y"
-  if [[ $yn == [Yy] ]]; then
-    echo
-    crontab_edit
-    sleep 1s
-  fi
   read -p "是否关闭SSH默认22端口 ?请输入 [Y/n] :" yn
   [ -z "${yn}" ] && yn="y"
   if [[ $yn == [Yy] ]]; then
     echo
     close_ssh_default_port
+    sleep 1s
+  fi
+  read -p "是否安装trojan ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    trojan
+    sleep 1s
+  fi
+  read -p "是否设置计划任务 ?请输入 [Y/n] :" yn
+  [ -z "${yn}" ] && yn="y"
+  if [[ $yn == [Yy] ]]; then
+    echo
+    crontab_edit
     sleep 1s
   fi
   read -p "是否安装加速模块 ?请输入 [Y/n] :" yn
@@ -169,9 +164,15 @@ function auto_install(){
     net_speed
     sleep 1s
   fi
-  read -s -n1 -p "按任意键清除缓存 ... "
-  echo
-  del_cache
+}
+
+#清除缓存
+function del_cache(){
+  cd
+  green " 已清除完毕"
+  rm -f trojan_mult.sh
+  rm -f /usr/src/tcp.sh
+  rm -f "$0"
 }
 
 #开始菜单
@@ -188,12 +189,12 @@ start_menu(){
   echo
   green " 1. 修改SSH端口号"
   green " 2. 安装前的系统环境检查"
-  green " 3. 启动trojan安装脚本"
-  green " 4. 设置计划任务"
-  green " 5. 关闭SSH默认22端口"
+  green " 3. 关闭SSH默认22端口"
+  green " 4. 启动trojan安装脚本"
+  green " 5. 设置计划任务"
   green " 6. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
-  green " 7. 清除缓存"
-  green " 8. 全自动执行3-7"
+  green " 7. 全自动执行3-6"
+  green " 8. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -217,19 +218,19 @@ start_menu(){
   check_system
   ;;
   3)
+  close_ssh_default_port
+  sleep 1s
+  read -s -n1 -p "按任意键返回菜单 ... "
+  start_menu
+  ;;
+  4)
   trojan
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  4)
-  crontab_edit
-  sleep 1s
-  read -s -n1 -p "按任意键返回菜单 ... "
-  start_menu
-  ;;
   5)
-  close_ssh_default_port
+  crontab_edit
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
@@ -241,10 +242,10 @@ start_menu(){
   start_menu
   ;;
   7)
-  del_cache
+  auto_install
   ;;
   8)
-  auto_install
+  del_cache
   ;;
   0)
   exit 1
