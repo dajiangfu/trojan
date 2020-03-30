@@ -19,11 +19,11 @@ if [[ -f /etc/redhat-release ]]; then
   systempwd="/usr/lib/systemd/system/"
 elif cat /etc/issue | grep -Eqi "debian"; then
   release="debian"
-  systemPackage="apt-get"
+  systemPackage="apt"
   systempwd="/lib/systemd/system/"
 elif cat /etc/issue | grep -Eqi "ubuntu"; then
   release="ubuntu"
-  systemPackage="apt-get"
+  systemPackage="apt"
   systempwd="/lib/systemd/system/"
 elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
   release="centos"
@@ -31,11 +31,11 @@ elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
   systempwd="/usr/lib/systemd/system/"
 elif cat /proc/version | grep -Eqi "debian"; then
   release="debian"
-  systemPackage="apt-get"
+  systemPackage="apt"
   systempwd="/lib/systemd/system/"
 elif cat /proc/version | grep -Eqi "ubuntu"; then
   release="ubuntu"
-  systemPackage="apt-get"
+  systemPackage="apt"
   systempwd="/lib/systemd/system/"
 elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
   release="centos"
@@ -289,7 +289,7 @@ function install_trojan(){
   CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
   if [ "$CHECK" != "SELINUX=disabled" ]; then
     green "检测到SELinux开启状态，添加放行80/443端口规则"
-    yum install -y policycoreutils-python >/dev/null 2>&1
+    $systemPackage install -y policycoreutils-python >/dev/null 2>&1
     semanage port -a -t http_port_t -p tcp 80
     semanage port -a -t http_port_t -p tcp 443
   fi
@@ -322,9 +322,9 @@ function install_trojan(){
       exit
     fi
     systemctl stop ufw
-    apt-get update
+    $systemPackage update
   elif [ "$release" == "debian" ]; then
-    apt-get update
+    $systemPackage update
   fi
   $systemPackage -y install  nginx wget unzip zip curl tar >/dev/null 2>&1
   systemctl enable nginx
@@ -405,9 +405,9 @@ function remove_trojan(){
   systemctl disable trojan
   rm -f ${systempwd}trojan.service
   if [ "$release" == "centos" ]; then
-    yum remove -y nginx
+    $systemPackage remove -y nginx
   else
-    apt autoremove -y nginx
+    $systemPackage autoremove -y nginx
   fi
   rm -rf /usr/src/trojan*
   rm -rf /usr/share/nginx/html/*
