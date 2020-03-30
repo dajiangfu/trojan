@@ -398,10 +398,8 @@ function repair_cert(){
   real_addr=`ping ${your_domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
   local_addr=`curl ipv4.icanhazip.com`
   if [ $real_addr == $local_addr ] ; then
-    ~/.acme.sh/acme.sh  --issue  -d $your_domain  --standalone
-    ~/.acme.sh/acme.sh  --installcert  -d  $your_domain   \
-    --key-file   /usr/src/trojan-cert/private.key \
-    --fullchain-file /usr/src/trojan-cert/fullchain.cer
+    ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
+    ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
     if test -s /usr/src/trojan-cert/fullchain.cer; then
       green "证书申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
