@@ -141,7 +141,6 @@ function auto_install(){
   read -p "是否关闭SSH默认22端口 ?请输入 [Y/n] :" yn
   [ -z "${yn}" ] && yn="y"
   if [[ $yn == [Yy] ]]; then
-    echo
     close_ssh_default_port
     sleep 1s
   fi

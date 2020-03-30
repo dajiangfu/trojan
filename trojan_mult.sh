@@ -315,7 +315,6 @@ function install_trojan(){
     fi
     red "请手动重启"
   fi
-  green " 检测到SELinux为关闭状态"
   if [ "$release" == "centos" ]; then
     if [ -n "$(grep ' 6\.' /etc/redhat-release)" ] ;then
       red "==============="
