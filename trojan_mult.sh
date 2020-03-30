@@ -287,12 +287,35 @@ function install_trojan(){
     exit 1
   fi
   CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-  if [ "$CHECK" != "SELINUX=disabled" ]; then
-    green "检测到SELinux开启状态，添加放行80/443端口规则"
-    $systemPackage install -y policycoreutils-python >/dev/null 2>&1
-    semanage port -a -t http_port_t -p tcp 80
-    semanage port -a -t http_port_t -p tcp 443
+  if [ "$CHECK" == "SELINUX=enforcing" ]; then
+    red "======================================================================="
+    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    red "请手动重启"
   fi
+  if [ "$CHECK" == "SELINUX=permissive" ]; then
+    red "======================================================================="
+    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    red "请手动重启"
+  fi
+  green " 检测到SELinux为关闭状态"
   if [ "$release" == "centos" ]; then
     if [ -n "$(grep ' 6\.' /etc/redhat-release)" ] ;then
       red "==============="
