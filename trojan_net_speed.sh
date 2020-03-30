@@ -66,7 +66,6 @@ function check_system(){
     fi
     red "请手动重启"
   fi
-  green " 检测到SELinux为关闭状态"
 }
 
 #关闭SSH默认22端口
