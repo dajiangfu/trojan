@@ -35,39 +35,6 @@ function change_ssh_port(){
   fi
 }
 
-#安装前的系统环境检查
-function check_system(){
-  CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-  if [ "$CHECK_SELINUX" == "SELINUX=enforcing" ]; then
-    red "======================================================================="
-    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-    red "======================================================================="
-    read -p "是否现在重启 ?请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-      setenforce 0
-      echo -e "VPS 重启中..."
-      reboot
-    fi
-    red "请手动重启"
-  fi
-  if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
-    red "======================================================================="
-    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-    red "======================================================================="
-    read -p "是否现在重启 ?请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
-      setenforce 0
-      echo -e "VPS 重启中..."
-      reboot
-    fi
-    red "请手动重启"
-  fi
-}
-
 #关闭SSH默认22端口
 function close_ssh_default_port(){
   cd
@@ -188,13 +155,12 @@ start_menu(){
   green " ======================================="
   echo
   green " 1. 修改SSH端口号"
-  green " 2. 安装前的系统环境检查"
-  green " 3. 关闭SSH默认22端口"
-  green " 4. 启动trojan安装脚本"
-  green " 5. 设置计划任务"
-  green " 6. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
-  green " 7. 全自动执行3-6"
-  green " 8. 清除缓存"
+  green " 2. 关闭SSH默认22端口"
+  green " 3. 启动trojan安装脚本"
+  green " 4. 设置计划任务"
+  green " 5. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
+  green " 6. 全自动执行2-5"
+  green " 7. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -203,48 +169,36 @@ start_menu(){
   change_ssh_port
   sleep 1s
   red " 稍后请使用修改好的端口连接SSH"
-  read -p "是否安装前的系统环境检查 ?请输入 [Y/n] :" yn
-  [ -z "${yn}" ] && yn="y"
-  if [[ $yn == [Yy] ]]; then
-    check_system
-    red " 接下来请使用修改好的端口连接SSH"
-  else
-    read -s -n1 -p "按任意键退出并使用修改好的端口连接SSH ... "
-    red " 已断开连接"
-    exit 1
-  fi
+  exit 1
   ;;
   2)
-  check_system
-  ;;
-  3)
   close_ssh_default_port
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  4)
+  3)
   trojan
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  5)
+  4)
   crontab_edit
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  6)
+  5)
   net_speed
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  7)
+  6)
   auto_install
   ;;
-  8)
+  7)
   del_cache
   ;;
   0)
