@@ -86,7 +86,7 @@ EOF
   mkdir /usr/src/trojan-cert /usr/src/trojan-temp
   curl https://get.acme.sh | sh
   ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
-  ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
+  ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer --reloadcmd "systemctl restart trojan"
   if test -s /usr/src/trojan-cert/fullchain.cer; then
     systemctl start nginx
     cd /usr/src
@@ -206,9 +206,9 @@ After=network.target
 Type=simple
 PIDFile=/usr/src/trojan/trojan/trojan.pid
 ExecStart=/usr/src/trojan/trojan -c "/usr/src/trojan/server.conf"
-ExecReload=
-ExecStop=kill -9 $(pidof /usr/src/trojan/trojan)
-PrivateTmp=true
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+RestartSec=1s
 
 [Install]
 WantedBy=multi-user.target
@@ -399,7 +399,7 @@ function repair_cert(){
   local_addr=`curl ipv4.icanhazip.com`
   if [ $real_addr == $local_addr ] ; then
     ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
-    ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
+    ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer --reloadcmd "systemctl restart trojan"
     if test -s /usr/src/trojan-cert/fullchain.cer; then
       green "证书申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
