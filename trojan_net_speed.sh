@@ -38,11 +38,33 @@ function change_ssh_port(){
 #安装前的系统环境检查
 function check_system(){
   CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-  if [ "$CHECK_SELINUX" != "SELINUX=disabled" ]; then
-    green "检测到SELinux开启状态，添加放行80/443端口规则"
-    yum install -y policycoreutils-python >/dev/null 2>&1
-    semanage port -m -t http_port_t -p tcp 80
-    semanage port -m -t http_port_t -p tcp 443
+  if [ "$CHECK_SELINUX" == "SELINUX=enforcing" ]; then
+    red "======================================================================="
+    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    red "请手动重启"
+  fi
+  if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
+    red "======================================================================="
+    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+    red "======================================================================="
+    read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+      setenforce 0
+      echo -e "VPS 重启中..."
+      reboot
+    fi
+    red "请手动重启"
   fi
 }
 
