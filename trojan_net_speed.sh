@@ -10,6 +10,23 @@ red(){
   echo -e "\033[31m\033[01m$1\033[0m"
 }
 
+#copy from 秋水逸冰 ss scripts
+if [[ -f /etc/redhat-release ]]; then
+  release_os="centos"
+elif cat /etc/issue | grep -Eqi "debian"; then
+  release_os="debian"
+elif cat /etc/issue | grep -Eqi "ubuntu"; then
+  release_os="ubuntu"
+elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
+  release_os="centos"
+elif cat /proc/version | grep -Eqi "debian"; then
+  release_os="debian"
+elif cat /proc/version | grep -Eqi "ubuntu"; then
+  release_os="ubuntu"
+elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
+  release_os="centos"
+fi
+
 #修改SSH端口号
 function change_ssh_port(){
   cd
@@ -29,8 +46,13 @@ function change_ssh_port(){
   else
     sed -i "/Port 22/a\Port $port_num" /etc/ssh/sshd_config
     sed -i '/Port 22/s/^#//' /etc/ssh/sshd_config
-    firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
-    firewall-cmd --reload
+    if [ "$release_os" == "centos" ]; then
+      firewall-cmd --zone=public --add-port=$port_num/tcp --permanent
+      firewall-cmd --reload
+    elif [ "$release_os" == "ubuntu" ]; then
+      ufw allow $port_num
+      ufw reload
+    fi
     systemctl restart sshd.service
   fi
 }
@@ -76,7 +98,11 @@ function close_ssh_default_port(){
     red " 端口22已被关闭，无需重复操作"
   else
     sed -i 's/Port 22/#Port 22/g' /etc/ssh/sshd_config
-    firewall-cmd --reload
+    if [ "$release_os" == "centos" ]; then
+      firewall-cmd --reload
+    elif [ "$release_os" == "ubuntu" ]; then
+      ufw reload
+    fi
     systemctl restart sshd.service
     green " 新端口连接成功后屏蔽原22端口成功"
   fi
