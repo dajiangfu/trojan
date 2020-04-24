@@ -334,7 +334,7 @@ function install_trojan(){
       exit
     fi
     systemctl stop firewalld.service
-    rpm -Uvh https://github.com/dajiangfu/trojan/raw/master/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+    rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
   elif [ "$release" == "ubuntu" ]; then
     if  [ -n "$(grep ' 14\.' /etc/os-release)" ] ;then
       red "==============="
