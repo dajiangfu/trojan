@@ -1,15 +1,15 @@
 #!/bin/bash
 
-blue(){
+function blue(){
   echo -e "\033[34m\033[01m$1\033[0m"
 }
-green(){
+function green(){
   echo -e "\033[32m\033[01m$1\033[0m"
 }
-red(){
+function red(){
   echo -e "\033[31m\033[01m$1\033[0m"
 }
-version_lt(){
+function version_lt(){
   test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1";
 }
 #copy from 秋水逸冰 ss scripts
@@ -44,6 +44,10 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
 fi
 
 function install(){
+  $systemPackage install -y nginx
+  systemctl enable nginx
+  systemctl stop nginx
+  sleep 5
   cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
 worker_processes  1;
@@ -77,7 +81,6 @@ EOF
   cd /usr/share/nginx/html/
   wget https://github.com/dajiangfu/trojan/raw/master/web.zip >/dev/null 2>&1
   unzip web.zip >/dev/null 2>&1
-  systemctl stop nginx
   sleep 5
   #申请https证书
   if [ ! -d "/usr/src" ]; then
@@ -86,7 +89,7 @@ EOF
   mkdir /usr/src/trojan-cert /usr/src/trojan-temp
   curl https://get.acme.sh | sh
   ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
-  ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer --reloadcmd "systemctl restart trojan"
+  ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
   if test -s /usr/src/trojan-cert/fullchain.cer; then
     systemctl start nginx
     cd /usr/src
@@ -101,7 +104,7 @@ EOF
     wget -P /usr/src/trojan-temp https://github.com/trojan-gfw/trojan/releases/download/v${latest_version}/trojan-${latest_version}-win.zip >/dev/null 2>&1
     unzip trojan-cli.zip >/dev/null 2>&1
     unzip /usr/src/trojan-temp/trojan-${latest_version}-win.zip -d /usr/src/trojan-temp/ >/dev/null 2>&1
-    cp /usr/src/trojan-cert/fullchain.cer /usr/src/trojan-cli/fullchain.cer
+    #cp /usr/src/trojan-cert/fullchain.cer /usr/src/trojan-cli/fullchain.cer
     mv -f /usr/src/trojan-temp/trojan/trojan.exe /usr/src/trojan-cli/ 
     trojan_passwd=$(cat /dev/urandom | head -1 | md5sum | head -c 8)
     cat > /usr/src/trojan-cli/config.json <<-EOF
@@ -118,7 +121,7 @@ EOF
   "ssl": {
     "verify": true,
     "verify_hostname": true,
-    "cert": "fullchain.cer",
+    "cert": "",
     "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:AES128-SHA:AES256-SHA:DES-CBC3-SHA",
     "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
     "sni": "",
@@ -286,34 +289,36 @@ function install_trojan(){
     red "============================================================="
     exit 1
   fi
-  CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-  if [ "$CHECK" == "SELINUX=enforcing" ]; then
-    red "======================================================================="
-    red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-    red "======================================================================="
-    read -p "是否现在重启 ?请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-      setenforce 0
-      echo -e "VPS 重启中..."
-      reboot
+  if [ -f "/etc/selinux/config" ]; then
+    CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
+    if [ "$CHECK" == "SELINUX=enforcing" ]; then
+      red "======================================================================="
+      red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+      red "======================================================================="
+      read -p "是否现在重启 ?请输入 [Y/n] :" yn
+      [ -z "${yn}" ] && yn="y"
+      if [[ $yn == [Yy] ]]; then
+        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+        setenforce 0
+        echo -e "VPS 重启中..."
+        reboot
+      fi
+      red "请手动重启"
     fi
-    red "请手动重启"
-  fi
-  if [ "$CHECK" == "SELINUX=permissive" ]; then
-    red "======================================================================="
-    red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-    red "======================================================================="
-    read -p "是否现在重启 ?请输入 [Y/n] :" yn
-    [ -z "${yn}" ] && yn="y"
-    if [[ $yn == [Yy] ]]; then
-      sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
-      setenforce 0
-      echo -e "VPS 重启中..."
-      reboot
+    if [ "$CHECK" == "SELINUX=permissive" ]; then
+      red "======================================================================="
+      red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
+      red "======================================================================="
+      read -p "是否现在重启 ?请输入 [Y/n] :" yn
+      [ -z "${yn}" ] && yn="y"
+      if [[ $yn == [Yy] ]]; then
+        sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+        setenforce 0
+        echo -e "VPS 重启中..."
+        reboot
+      fi
+      red "请手动重启"
     fi
-    red "请手动重启"
   fi
   if [ "$release" == "centos" ]; then
     if [ -n "$(grep ' 6\.' /etc/redhat-release)" ] ;then
@@ -348,9 +353,7 @@ function install_trojan(){
   elif [ "$release" == "debian" ]; then
     $systemPackage update
   fi
-  $systemPackage -y install  nginx wget unzip zip curl tar >/dev/null 2>&1
-  systemctl enable nginx
-  systemctl stop nginx
+  $systemPackage -y install wget unzip zip curl tar >/dev/null 2>&1
   green "======================="
   blue "请输入绑定到本VPS的域名"
   green "======================="
@@ -399,7 +402,7 @@ function repair_cert(){
   local_addr=`curl ipv4.icanhazip.com`
   if [ $real_addr == $local_addr ] ; then
     ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
-    ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer --reloadcmd "systemctl restart trojan"
+    ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
     if test -s /usr/src/trojan-cert/fullchain.cer; then
       green "证书申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
