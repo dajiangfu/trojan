@@ -15,32 +15,29 @@ function version_lt(){
 #copy from 秋水逸冰 ss scripts
 if [[ -f /etc/redhat-release ]]; then
   release="centos"
-  systemPackage="yum"
-  systempwd="/usr/lib/systemd/system/"
 elif cat /etc/issue | grep -Eqi "debian"; then
   release="debian"
-  systemPackage="apt"
-  systempwd="/lib/systemd/system/"
 elif cat /etc/issue | grep -Eqi "ubuntu"; then
   release="ubuntu"
-  systemPackage="apt"
-  systempwd="/lib/systemd/system/"
 elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
   release="centos"
-  systemPackage="yum"
-  systempwd="/usr/lib/systemd/system/"
 elif cat /proc/version | grep -Eqi "debian"; then
   release="debian"
-  systemPackage="apt"
-  systempwd="/lib/systemd/system/"
 elif cat /proc/version | grep -Eqi "ubuntu"; then
   release="ubuntu"
-  systemPackage="apt"
-  systempwd="/lib/systemd/system/"
 elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
   release="centos"
+fi
+
+if [ "$release" == "centos" ]; then
   systemPackage="yum"
   systempwd="/usr/lib/systemd/system/"
+elif [ "$release" == "ubuntu" ]; then
+  systemPackage="apt"
+  systempwd="/lib/systemd/system/"
+elif [ "$release" == "debian" ]; then
+  systemPackage="apt"
+  systempwd="/lib/systemd/system/"
 fi
 
 function install(){
