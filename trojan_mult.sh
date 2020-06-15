@@ -186,7 +186,9 @@ EOF
     "database": "trojan",
     "username": "trojan",
     "password": "",
-    "cafile": ""
+    "key": "",
+    "cert": "",
+    "ca": ""
   }
 }
 EOF
