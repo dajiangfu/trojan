@@ -292,7 +292,7 @@ function install_trojan(){
   if [ -f "/etc/selinux/config" ]; then
     CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
     if [ "$CHECK" != "SELINUX=disabled" ]; then
-      red -p "检测到SELinux开启状态，是否继续开启SElinux ?请输入 [Y/n] :" yn
+      read -p "检测到SELinux开启状态，是否继续开启SElinux ?请输入 [Y/n] :" yn
       [ -z "${yn}" ] && yn="y"
       if [[ $yn == [Yy] ]]; then
         green "添加放行80/443端口规则"
