@@ -69,7 +69,7 @@ function change_ssh_port(){
         [ -z "${yn}" ] && yn="y"
         if [[ $yn == [Yy] ]]; then
           green "添加放行$port_num端口规则"
-          $systemPackage_os -y install policycoreutils-python >/dev/null 2>&1
+          $systemPackage_os -y install policycoreutils-python
           semanage port -a -t ssh_port_t -p tcp $port_num
         else
           if [ "$CHECK" == "SELINUX=enforcing" ]; then
