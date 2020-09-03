@@ -78,7 +78,7 @@ function change_ssh_port(){
             sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
           fi
           red "======================================================================="
-          red "为防止申请证书失败，请先重启VPS后，再执行本脚本，即将在3秒后重启......."
+          red "关闭selinux后，必须重启VPS才能生效，再执行本脚本，即将在3秒后重启......"
           red "======================================================================="
           clear
           green "重启倒计时3s"

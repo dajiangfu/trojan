@@ -297,8 +297,16 @@ function install_trojan(){
       if [[ $yn == [Yy] ]]; then
         green "添加放行80/443端口规则"
         $systemPackage -y install policycoreutils-python
-        semanage port -a -t http_port_t -p tcp 80
-        semanage port -a -t http_port_t -p tcp 443
+        if [ semanage port -l|grep  http_port_t|grep -w 80 ]; then
+          green "80端口已添加"
+        else
+          semanage port -a -t http_port_t -p tcp 80
+        fi
+        if [ semanage port -l|grep  http_port_t|grep -w 443 ]; then
+          green "443端口已添加"
+        else
+          semanage port -a -t http_port_t -p tcp 443
+        fi
       else
         if [ "$CHECK" == "SELINUX=enforcing" ]; then
             sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -306,7 +314,7 @@ function install_trojan(){
             sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
         fi
         red "======================================================================="
-        red "为防止申请证书失败，请先重启VPS后，再执行本脚本，即将在3秒后重启......."
+        red "关闭selinux后，必须重启VPS才能生效，再执行本脚本，即将在3秒后重启......"
         red "======================================================================="
         clear
         green "重启倒计时3s"
