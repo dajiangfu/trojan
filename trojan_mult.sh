@@ -297,8 +297,8 @@ function install_trojan(){
       if [[ $yn == [Yy] ]]; then
         green "添加放行80/443端口规则"
         $systemPackage -y install policycoreutils-python
-        semanage port -m -t http_port_t -p tcp 80
-        semanage port -m -t http_port_t -p tcp 443
+        semanage port -a -t http_port_t -p tcp 80
+        semanage port -a -t http_port_t -p tcp 443
       else
         if [ "$CHECK" == "SELINUX=enforcing" ]; then
             sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
