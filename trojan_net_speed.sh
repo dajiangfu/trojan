@@ -27,11 +27,11 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
   release_os="centos"
 fi
 
-if [ "$release" == "centos" ]; then
+if [ "$release_os" == "centos" ]; then
   systemPackage_os="yum"
-elif [ "$release" == "ubuntu" ]; then
+elif [ "$release_os" == "ubuntu" ]; then
   systemPackage_os="apt"
-elif [ "$release" == "debian" ]; then
+elif [ "$release_os" == "debian" ]; then
   systemPackage_os="apt"
 fi
 
