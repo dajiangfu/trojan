@@ -27,6 +27,14 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
   release_os="centos"
 fi
 
+if [ "$release" == "centos" ]; then
+  systemPackage_os="yum"
+elif [ "$release" == "ubuntu" ]; then
+  systemPackage_os="apt"
+elif [ "$release" == "debian" ]; then
+  systemPackage_os="apt"
+fi
+
 #修改SSH端口号
 function change_ssh_port(){
   cd
@@ -53,42 +61,43 @@ function change_ssh_port(){
       ufw allow $port_num
       ufw reload
     fi
+    #目前SELinux 支持三种模式，分别是enforcing：强制模式，permissive：宽容模式，disabled：关闭
+    if [ -f "/etc/selinux/config" ]; then
+      CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
+      if [ "$CHECK" != "SELINUX=disabled" ]; then
+        red -p "检测到SELinux开启状态，是否继续开启SElinux ?请输入 [Y/n] :" yn
+        [ -z "${yn}" ] && yn="y"
+        if [[ $yn == [Yy] ]]; then
+          green "添加放行$port_num端口规则"
+          $systemPackage_os -y install policycoreutils-python >/dev/null 2>&1
+          semanage port -a -t ssh_port_t -p tcp $port_num
+        else
+          if [ "$CHECK" == "SELINUX=enforcing" ]; then
+            sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+          elif [ "$CHECK" == "SELINUX=permissive" ]; then
+            sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+          fi
+          red "======================================================================="
+          red "为防止申请证书失败，请先重启VPS后，再执行本脚本，即将在3秒后重启......."
+          red "======================================================================="
+          clear
+          green "重启倒计时3s"
+          sleep 1s
+          clear
+          green "重启倒计时2s"
+          sleep 1s
+          clear
+          green "重启倒计时1s"
+          sleep 1s
+          clear
+          green "重启中..."
+          reboot
+        fi
+      fi
+    fi
     systemctl restart sshd.service
-  fi
-}
-
-#安装前的系统环境检查
-function check_system(){
-  if [ -f "/etc/selinux/config" ]; then
-    CHECK_SELINUX=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-    if [ "$CHECK_SELINUX" == "SELINUX=enforcing" ]; then
-      red "======================================================================="
-      red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-      red "======================================================================="
-      read -p "是否现在重启 ?请输入 [Y/n] :" yn
-      [ -z "${yn}" ] && yn="y"
-      if [[ $yn == [Yy] ]]; then
-        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-        setenforce 0
-        echo -e "VPS 重启中..."
-        reboot
-      fi
-      red "请手动重启"
-    fi
-    if [ "$CHECK_SELINUX" == "SELINUX=permissive" ]; then
-      red "======================================================================="
-      red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-      red "======================================================================="
-      read -p "是否现在重启 ?请输入 [Y/n] :" yn
-      [ -z "${yn}" ] && yn="y"
-      if [[ $yn == [Yy] ]]; then
-        sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
-        setenforce 0
-        echo -e "VPS 重启中..."
-        reboot
-      fi
-      red "请手动重启"
-    fi
+    sleep 1s
+    red " 稍后请使用修改好的端口连接SSH"
   fi
 }
 
@@ -215,65 +224,47 @@ start_menu(){
   green " ======================================="
   echo
   green " 1. 修改SSH端口号"
-  green " 2. 安装前的系统环境检查"
-  green " 3. 关闭SSH默认22端口"
-  green " 4. 启动trojan安装脚本"
-  green " 5. 设置计划任务"
-  green " 6. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
-  green " 7. 全自动执行3-6"
-  green " 8. 清除缓存"
+  green " 2. 关闭SSH默认22端口"
+  green " 3. 启动trojan安装脚本"
+  green " 4. 设置计划任务"
+  green " 5. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
+  green " 6. 全自动执行2-5"
+  green " 7. 清除缓存"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
   case "$num" in
   1)
   change_ssh_port
-  sleep 1s
-  red " 稍后请使用修改好的端口连接SSH"
-  read -p "是否安装前的系统环境检查 ?请输入 [Y/n] :" yn
-  [ -z "${yn}" ] && yn="y"
-  if [[ $yn == [Yy] ]]; then
-    check_system
-    red " 接下来请使用修改好的端口连接SSH"
-  else
-    read -s -n1 -p "按任意键退出并使用修改好的端口连接SSH ... "
-    exit 1
-  fi
   ;;
   2)
-  check_system
-  sleep 1s
-  read -s -n1 -p "按任意键返回菜单 ... "
-  start_menu
-  ;;
-  3)
   close_ssh_default_port
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  4)
+  3)
   trojan
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  5)
+  4)
   crontab_edit
   sleep 1s
   read -s -n1 -p "按任意键返回菜单 ... "
   start_menu
   ;;
-  6)
+  5)
   net_speed
   sleep 1s
   read -s -n1 -p "按任意键返回上级菜单 ... "
   start_menu
   ;;
-  7)
+  6)
   auto_install
   ;;
-  8)
+  7)
   del_cache
   ;;
   0)

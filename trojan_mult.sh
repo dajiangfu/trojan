@@ -41,7 +41,7 @@ elif [ "$release" == "debian" ]; then
 fi
 
 function install(){
-  $systemPackage install -y nginx
+  $systemPackage -y install nginx
   systemctl enable nginx
   systemctl stop nginx
   sleep 5
@@ -288,35 +288,39 @@ function install_trojan(){
     red "============================================================="
     exit 1
   fi
+  #目前SELinux 支持三种模式，分别是enforcing：强制模式，permissive：宽容模式，disabled：关闭
   if [ -f "/etc/selinux/config" ]; then
     CHECK=$(grep SELINUX= /etc/selinux/config | grep -v "#")
-    if [ "$CHECK" == "SELINUX=enforcing" ]; then
-      red "======================================================================="
-      red "检测到SELinux为开启状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-      red "======================================================================="
-      read -p "是否现在重启 ?请输入 [Y/n] :" yn
+    if [ "$CHECK" != "SELINUX=disabled" ]; then
+      red -p "检测到SELinux开启状态，是否继续开启SElinux ?请输入 [Y/n] :" yn
       [ -z "${yn}" ] && yn="y"
       if [[ $yn == [Yy] ]]; then
-        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-        setenforce 0
-        echo -e "VPS 重启中..."
+        green "添加放行80/443端口规则"
+        $systemPackage -y install policycoreutils-python >/dev/null 2>&1
+        semanage port -m -t http_port_t -p tcp 80
+        semanage port -m -t http_port_t -p tcp 443
+      else
+        if [ "$CHECK" == "SELINUX=enforcing" ]; then
+            sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+        elif [ "$CHECK" == "SELINUX=permissive" ]; then
+            sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+        fi
+        red "======================================================================="
+        red "为防止申请证书失败，请先重启VPS后，再执行本脚本，即将在3秒后重启......."
+        red "======================================================================="
+        clear
+        green "重启倒计时3s"
+        sleep 1s
+        clear
+        green "重启倒计时2s"
+        sleep 1s
+        clear
+        green "重启倒计时1s"
+        sleep 1s
+        clear
+        green "重启中..."
         reboot
       fi
-      red "请手动重启"
-    fi
-    if [ "$CHECK" == "SELINUX=permissive" ]; then
-      red "======================================================================="
-      red "检测到SELinux为宽容状态，为防止申请证书失败，请先重启VPS后，再执行本脚本"
-      red "======================================================================="
-      read -p "是否现在重启 ?请输入 [Y/n] :" yn
-      [ -z "${yn}" ] && yn="y"
-      if [[ $yn == [Yy] ]]; then
-        sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
-        setenforce 0
-        echo -e "VPS 重启中..."
-        reboot
-      fi
-      red "请手动重启"
     fi
   fi
   if [ "$release" == "centos" ]; then
@@ -427,9 +431,9 @@ function remove_trojan(){
   systemctl disable trojan
   rm -f ${systempwd}trojan.service
   if [ "$release" == "centos" ]; then
-    $systemPackage remove -y nginx
+    $systemPackage -y remove nginx
   else
-    $systemPackage autoremove -y nginx
+    $systemPackage -y autoremove nginx
   fi
   rm -rf /usr/src/trojan*
   rm -rf /usr/share/nginx/html/*
