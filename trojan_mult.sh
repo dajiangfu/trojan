@@ -297,17 +297,17 @@ function install_trojan(){
       if [[ $yn == [Yy] ]]; then
         green "添加放行80/443端口规则"
         $systemPackage -y install policycoreutils-python
-        if semanage port -l|grep  http_port_t|grep -w 80
-        then
+        if semanage port -l|grep  http_port_t|grep -w 80 >/dev/null 2>/dev/null; then
           green "80端口已添加"
         else
-          semanage port -a -t http_port_t -p tcp 80
+          semanage port -a -t http_port_t -p tcp 80 >/dev/null 2>&1
+          green "80端口已添加"
         fi
-        if semanage port -l|grep  http_port_t|grep -w 443
-        then
+        if semanage port -l|grep  http_port_t|grep -w 443 >/dev/null 2>/dev/null; then
           green "443端口已添加"
         else
-          semanage port -a -t http_port_t -p tcp 443
+          semanage port -a -t http_port_t -p tcp 443 >/dev/null 2>&1
+          green "443端口已添加"
         fi
       else
         if [ "$CHECK" == "SELINUX=enforcing" ]; then
