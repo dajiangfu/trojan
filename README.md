@@ -20,6 +20,6 @@ curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_centos7
 
 curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_mult.sh && chmod +x trojan_mult.sh && ./trojan_mult.sh
 
-3、综合安装
+3、综合安装（可开启防火墙、selinux并自动放行对应端口）
 
 curl -O https://raw.githubusercontent.com/dajiangfu/trojan/master/trojan_net_speed.sh && chmod +x trojan_net_speed.sh && ./trojan_net_speed.sh
