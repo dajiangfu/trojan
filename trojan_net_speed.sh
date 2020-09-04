@@ -236,6 +236,7 @@ start_menu(){
   case "$num" in
   1)
   change_ssh_port
+  exit
   ;;
   2)
   close_ssh_default_port
