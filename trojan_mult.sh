@@ -74,6 +74,8 @@ http {
   }
 }
 EOF
+  systemctl start nginx
+  sleep 3
   #设置伪装站
   rm -rf /usr/share/nginx/html/*
   cd /usr/share/nginx/html/
@@ -100,7 +102,7 @@ EOF
     #注册域名证书绑定邮箱
     ~/.acme.sh/acme.sh  --register-account  -m $your_mail --server zerossl
     #设置证书签发方式
-    ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
+    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
   else
     #使用letsencrypt作为默认证书
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
@@ -110,12 +112,47 @@ EOF
   #安装证书
   ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
   if test -s /usr/src/trojan-cert/fullchain.cer; then
-    systemctl start nginx
+    cat > /etc/nginx/nginx.conf <<-EOF
+user  root;
+worker_processes  1;
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+events {
+  worker_connections  1024;
+}
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+  log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+    '\$status \$body_bytes_sent "\$http_referer" '
+    '"\$http_user_agent" "\$http_x_forwarded_for"';
+  access_log  /var/log/nginx/access.log  main;
+  sendfile        on;
+  #tcp_nopush     on;
+  keepalive_timeout  120;
+  client_max_body_size 20m;
+  #gzip  on;
+  server {
+    listen       127.0.0.1:80;
+    server_name  $your_domain;
+    #如果想将80端口强制跳转到443端口，增加这条rewrite ^(.*)$ https://${server_name}$1 permanent;
+    root /usr/share/nginx/html;
+    index index.php index.html index.htm;
+  }
+  server {
+    listen       0.0.0.0:80;
+    server_name  $your_domain;
+    return 301 https://$your_domain\$request_uri;
+  }
+}
+EOF
+    systemctl restart nginx
     cd /usr/src
     #下载trojan服务端
     wget https://api.github.com/repos/trojan-gfw/trojan/releases/latest >/dev/null 2>&1
     latest_version=`grep tag_name latest| awk -F '[:,"v]' '{print $6}'`
     rm -f latest
+    green "开始下载最新版trojan amd64"
     wget https://github.com/trojan-gfw/trojan/releases/download/v${latest_version}/trojan-${latest_version}-linux-amd64.tar.xz >/dev/null 2>&1
     tar xf trojan-${latest_version}-linux-amd64.tar.xz >/dev/null 2>&1
     #下载trojan客户端
