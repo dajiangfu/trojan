@@ -458,6 +458,7 @@ function install_trojan(){
 function repair_cert(){
   systemctl stop nginx
   Port80=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 80`
+  Port443=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 443`
   if [ -n "$Port80" ]; then
     process80=`netstat -tlpn | awk -F '[: ]+' '$5=="80"{print $9}'`
     red "==========================================================="
@@ -465,43 +466,52 @@ function repair_cert(){
     red "==========================================================="
     exit 1
   fi
+  if [ -n "$Port443" ]; then
+    process443=`netstat -tlpn | awk -F '[: ]+' '$5=="443"{print $9}'`
+    red "============================================================="
+    red "检测到443端口被占用，占用进程为：${process443}，本次安装结束"
+    red "============================================================="
+    exit 1
+  fi
   green "======================="
   blue "请输入绑定到本VPS的域名"
-  blue "务必与之前失败使用的域名一致"
   green "======================="
   read your_domain
   real_addr=`ping ${your_domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
   local_addr=`curl ipv4.icanhazip.com`
   if [ $real_addr == $local_addr ] ; then
+    green "=========================================="
+    green "       域名解析正常，开始重新申请证书"
+    green "=========================================="
     #选择使用letsencrypt或者zerossl
     read -p "是否使用ZeroSSL证书 ?请输入 [Y/n] :" yn
     [ -z "${yn}" ] && yn="y"
     if [[ $yn == [Yy] ]]; then
       green "======================="
-      blue "请输入绑定到本域名的邮箱地址"
+      blue "请输入绑定到本域名的邮箱地址(不会验证邮箱是否本人的)"
       green "======================="
       read your_mail
       #使用zerossl作为默认证书
       ~/.acme.sh/acme.sh --set-default-ca --server zerossl
       #注册域名证书绑定邮箱
       ~/.acme.sh/acme.sh  --register-account  -m $your_mail --server zerossl
-      #设置证书签发方式
-      ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
+      #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
+      ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
     else
       #使用letsencrypt作为默认证书
       ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
       #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-      ~/.acme.sh/acme.sh --issue -d $your_domain --standalone
+      ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
     fi
     #安装证书
     ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
     if test -s /usr/src/trojan-cert/fullchain.cer; then
-      green "证书申请成功"
+      green "证书重新申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
       systemctl restart trojan
       systemctl start nginx
     else
-      red "申请证书失败"
+      red "重新申请证书失败"
     fi
   else
     red "================================"
@@ -570,7 +580,7 @@ start_menu(){
   green " 1. 安装trojan"
   red " 2. 卸载trojan"
   green " 3. 升级trojan"
-  green " 4. 修复证书"
+  green " 4. 重新申请证书"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
