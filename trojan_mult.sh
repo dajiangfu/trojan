@@ -102,12 +102,12 @@ EOF
     #注册域名证书绑定邮箱
     ~/.acme.sh/acme.sh  --register-account  -m $your_mail --server zerossl
     #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
+    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx /etc/nginx/nginx.conf
   else
     #使用letsencrypt作为默认证书
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
     #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
+    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx /etc/nginx/nginx.conf
   fi
   #安装证书
   ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
@@ -489,12 +489,12 @@ function repair_cert(){
       #注册域名证书绑定邮箱
       ~/.acme.sh/acme.sh  --register-account  -m $your_mail --server zerossl
       #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-      ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
+      ~/.acme.sh/acme.sh --issue -d $your_domain --nginx /etc/nginx/nginx.conf
     else
       #使用letsencrypt作为默认证书
       ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
       #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-      ~/.acme.sh/acme.sh --issue -d $your_domain --nginx
+      ~/.acme.sh/acme.sh --issue -d $your_domain --nginx /etc/nginx/nginx.conf
     fi
     #安装证书
     ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
