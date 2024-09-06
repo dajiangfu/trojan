@@ -211,6 +211,19 @@ function del_cache(){
   rm -f "$0"
 }
 
+#解决centos 7 yum仓库无法使用问题(临时方案一)
+function centos7_yum(){
+  green "启用 *.repo 中的 baseurl，注释 mirrorlist，将baseurl仓库地址替换为vault.centos.org存档站点"
+  sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo
+  sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
+  sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo
+  green "清除 YUM 缓存，如有需要可再生成新的缓存"
+  yum clean all
+  yum makecache
+  green "验证可用仓库"
+  yum repolist
+}
+
 #开始菜单
 start_menu(){
   clear
@@ -230,6 +243,7 @@ start_menu(){
   green " 5. 启动BBR+BBR魔改+BBRplus+Lotserver安装脚本"
   green " 6. 全自动执行2-5"
   green " 7. 清除缓存"
+  green " 8. 解决centos 7 yum仓库无法使用问题"
   blue " 0. 退出脚本"
   echo
   read -p "请输入数字:" num
@@ -266,6 +280,9 @@ start_menu(){
   ;;
   7)
   del_cache
+  ;;
+  8)
+  centos7_yum
   ;;
   0)
   exit 1
