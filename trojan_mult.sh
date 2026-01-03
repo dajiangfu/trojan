@@ -74,7 +74,6 @@ http {
   }
 }
 EOF
-  systemctl start nginx
   sleep 3
   #设置伪装站
   rm -rf /usr/share/nginx/html/*
@@ -100,18 +99,23 @@ EOF
     #使用zerossl作为默认证书
     ~/.acme.sh/acme.sh --set-default-ca --server zerossl
     #注册域名证书绑定邮箱
-    ~/.acme.sh/acme.sh  --register-account  -m $your_mail --server zerossl
+    ~/.acme.sh/acme.sh  --register-account  -m "$your_mail" --server zerossl
     #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx /etc/nginx/nginx.conf
+    # ~/.acme.sh/acme.sh --issue -d "$your_domain" --nginx /etc/nginx/nginx.conf
+    ~/.acme.sh/acme.sh --issue -d "$your_domain" --standalone --force --ecc
   else
     #使用letsencrypt作为默认证书
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
     #设置证书签发方式，如果你本地没有装任何 Web 服务器软件，或者你的 Web 服务器软件并没有监听 TCP 80 端口，那么可以用 Standalone 方式直接获取多域名证书
-    ~/.acme.sh/acme.sh --issue -d $your_domain --nginx /etc/nginx/nginx.conf
+    # ~/.acme.sh/acme.sh --issue -d "$your_domain" --nginx /etc/nginx/nginx.conf
+    ~/.acme.sh/acme.sh --issue -d "$your_domain" --standalone --force --ecc
   fi
   #安装证书
-  ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
-  if test -s /usr/src/trojan-cert/fullchain.cer; then
+  ~/.acme.sh/acme.sh --install-cert -d "$your_domain" \
+    --key-file /usr/src/trojan-cert/private.key \
+    --fullchain-file /usr/src/trojan-cert/fullchain.cer \
+    --ecc
+  if [ -s /usr/src/trojan-cert/fullchain.cer ]; then
     cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
 worker_processes  1;
@@ -146,7 +150,7 @@ http {
   }
 }
 EOF
-    systemctl restart nginx
+    systemctl start nginx
     cd /usr/src
     #下载trojan服务端
     wget https://api.github.com/repos/trojan-gfw/trojan/releases/latest >/dev/null 2>&1
@@ -168,7 +172,7 @@ EOF
   "run_type": "client",
   "local_addr": "127.0.0.1",
   "local_port": 1080,
-  "remote_addr": "$your_domain",
+  "remote_addr": $your_domain,
   "remote_port": 443,
   "password": [
     "$trojan_passwd"
@@ -461,31 +465,42 @@ function repair_cert(){
   green "======================="
   read your_domain
   real_addr=`ping ${your_domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
-  local_addr=`curl ipv4.icanhazip.com`
-  if [ $real_addr == $local_addr ] ; then
+  local_addr=`curl -s ipv4.icanhazip.com`
+  if [ "$real_addr" == "$local_addr" ] ; then
     green "=========================================="
     green "       域名解析正常，开始重新申请证书"
     green "=========================================="
+    
+    # 1. 停止相关服务，确保端口 80 释放
     systemctl stop trojan
     systemctl stop nginx
-    #申请https证书
-    if [ ! -d "/usr/src" ]; then
-      mkdir /usr/src
-    fi
-    mkdir /usr/src/trojan-cert /usr/src/trojan-temp
-    #强制重新申请证书
+    # 强杀占用 80 端口的残余进程
+    fuser -k 80/tcp >/dev/null 2>&1 
+
+    # 2. 准备目录
+    mkdir -p /usr/src/trojan-cert
+    
+    # 3. 强制使用 Standalone 模式申请 (最稳妥)
+    # 使用 --issue + --standalone 会覆盖之前的 --nginx 模式记录
     ~/.acme.sh/acme.sh --issue -d "$your_domain" --standalone --force --ecc
-    #安装证书
+    
+    # 4. 安装证书
     ~/.acme.sh/acme.sh --install-cert -d "$your_domain" \
-    --key-file /usr/src/trojan-cert/private.key \
-    --fullchain-file /usr/src/trojan-cert/fullchain.cer \
-    --ecc
-    if test -s /usr/src/trojan-cert/fullchain.cer; then
+      --key-file /usr/src/trojan-cert/private.key \
+      --fullchain-file /usr/src/trojan-cert/fullchain.cer \
+      --ecc
+    if [ -s /usr/src/trojan-cert/fullchain.cer ]; then
+      green "=========================================="
       green "证书重新申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
+      green "=========================================="
+      # 5. 绑定续期钩子：下次自动续期时会自动开关 Nginx
+      # ~/.acme.sh/acme.sh --set-default-pre-hook "systemctl stop nginx" --set-default-post-hook "systemctl start nginx"
     else
       red "重新申请证书失败"
     fi
+    
+    # 6. 恢复服务
     systemctl start nginx
     systemctl start trojan
   else
