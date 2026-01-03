@@ -490,6 +490,40 @@ function repair_cert(){
       --fullchain-file /usr/src/trojan-cert/fullchain.cer \
       --ecc
     if [ -s /usr/src/trojan-cert/fullchain.cer ]; then
+      cat > /etc/nginx/nginx.conf <<-EOF
+user  root;
+worker_processes  1;
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+events {
+  worker_connections  1024;
+}
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+  log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+    '\$status \$body_bytes_sent "\$http_referer" '
+    '"\$http_user_agent" "\$http_x_forwarded_for"';
+  access_log  /var/log/nginx/access.log  main;
+  sendfile        on;
+  #tcp_nopush     on;
+  keepalive_timeout  120;
+  client_max_body_size 20m;
+  #gzip  on;
+  server {
+    listen       127.0.0.1:80;
+    server_name  $your_domain;
+    #如果想将80端口强制跳转到443端口，增加这条rewrite ^(.*)$ https://${server_name}$1 permanent;
+    root /usr/share/nginx/html;
+    index index.php index.html index.htm;
+  }
+  server {
+    listen       0.0.0.0:80;
+    server_name  $your_domain;
+    return 301 https://$your_domain\$request_uri;
+  }
+}
+EOF
       green "=========================================="
       green "证书重新申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
