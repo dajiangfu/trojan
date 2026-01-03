@@ -466,24 +466,28 @@ function repair_cert(){
     green "=========================================="
     green "       域名解析正常，开始重新申请证书"
     green "=========================================="
-    # systemctl stop nginx
+    systemctl stop trojan
+    systemctl stop nginx
     #申请https证书
     if [ ! -d "/usr/src" ]; then
       mkdir /usr/src
     fi
     mkdir /usr/src/trojan-cert /usr/src/trojan-temp
-	#强制重新申请证书
-    ~/.acme.sh/acme.sh --renew -d $your_domain --force
+    #强制重新申请证书
+    ~/.acme.sh/acme.sh --issue -d "$your_domain" --standalone --force --ecc
     #安装证书
-    ~/.acme.sh/acme.sh --installcert -d $your_domain --key-file /usr/src/trojan-cert/private.key --fullchain-file /usr/src/trojan-cert/fullchain.cer
+    ~/.acme.sh/acme.sh --install-cert -d "$your_domain" \
+    --key-file /usr/src/trojan-cert/private.key \
+    --fullchain-file /usr/src/trojan-cert/fullchain.cer \
+    --ecc
     if test -s /usr/src/trojan-cert/fullchain.cer; then
       green "证书重新申请成功"
       green "请将/usr/src/trojan-cert/下的fullchain.cer下载放到客户端trojan-cli文件夹"
-      systemctl restart trojan
-      systemctl restart nginx
     else
       red "重新申请证书失败"
     fi
+    systemctl start nginx
+    systemctl start trojan
   else
     red "================================"
     red "域名解析地址与本VPS IP地址不一致"
