@@ -456,7 +456,6 @@ function install_trojan(){
 }
 
 function repair_cert(){
-  systemctl stop nginx
   Port80=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 80`
   Port443=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 443`
   if [ -n "$Port80" ]; then
@@ -476,6 +475,14 @@ function repair_cert(){
     green "=========================================="
     green "       域名解析正常，开始重新申请证书"
     green "=========================================="
+    systemctl stop nginx
+    #申请https证书
+    if [ ! -d "/usr/src" ]; then
+      mkdir /usr/src
+    fi
+    mkdir /usr/src/trojan-cert /usr/src/trojan-temp
+    #安装acme.sh脚本
+    curl https://get.acme.sh | sh
     #选择使用letsencrypt或者zerossl
     read -p "是否使用ZeroSSL证书 ?请输入 [Y/n] :" yn
     [ -z "${yn}" ] && yn="y"
